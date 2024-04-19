@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="王浩龙">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="SQL1原理SQL注入的原理是将恶意的SQL命令插入到Web表单中，再提交给服务器执行。这些恶意SQL命令通常是利用APP对用户输入的数据过滤不严格，从而插入非法的SQL语句，并绕过APP的安全防护。 当攻击者在Web应用程序中注入特殊格式的SQL语句时，应用程序没有正确地过滤这些语句，就会将它们嵌入到正常的SQL查询中。这些恶意的SQL语句可能会在数据库中执行一些非预期的操作，比如获取敏感数据、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入">
+<meta property="og:url" content="http://example.com/2024/04/18/aa/index.html">
+<meta property="og:site_name" content="被窝探险家">
+<meta property="og:description" content="SQL1原理SQL注入的原理是将恶意的SQL命令插入到Web表单中，再提交给服务器执行。这些恶意SQL命令通常是利用APP对用户输入的数据过滤不严格，从而插入非法的SQL语句，并绕过APP的安全防护。 当攻击者在Web应用程序中注入特殊格式的SQL语句时，应用程序没有正确地过滤这些语句，就会将它们嵌入到正常的SQL查询中。这些恶意的SQL语句可能会在数据库中执行一些非预期的操作，比如获取敏感数据、">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2024/04/18/aa/cs.jpg">
+<meta property="article:published_time" content="2024-04-18T12:42:33.785Z">
+<meta property="article:modified_time" content="2024-04-18T13:23:06.237Z">
+<meta property="article:author" content="王浩龙">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2024/04/18/aa/cs.jpg">
+  
+  
+  
+  <title>SQL注入 - 被窝探险家</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"TBbwgx221bhvVyxiMofTKjZM-gzGzoHsz","app_key":"tReAgvAT4nGWqH8slrtUWIjG","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>被窝探险家</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="SQL注入"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-04-18 20:42" pubdate>
+          2024年4月18日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">SQL注入</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="SQL"><a href="#SQL" class="headerlink" title="SQL"></a>SQL</h1><h2 id="1原理"><a href="#1原理" class="headerlink" title="1原理"></a>1原理</h2><p>SQL注入的原理是将恶意的SQL命令插入到Web表单中，再提交给服务器执行。这些恶意SQL命令通常是利用APP对用户输入的数据过滤不严格，从而插入非法的SQL语句，并绕过APP的安全防护。</p>
+<p>当攻击者在Web应用程序中注入特殊格式的SQL语句时，应用程序没有正确地过滤这些语句，就会将它们嵌入到正常的SQL查询中。这些恶意的SQL语句可能会在数据库中执行一些非预期的操作，比如获取敏感数据、修改数据或删除数据等。<br>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_73995538/article/details/133240994">https://blog.csdn.net/m0_73995538/article/details/133240994</a></p>
+<h2 id="2-sql注入分类"><a href="#2-sql注入分类" class="headerlink" title="2 sql注入分类"></a>2 sql注入分类</h2><p><strong>报错注入：</strong>GET基于报错的注入、POST基于错误的注入等报错注入；</p>
+<p>​    <strong>盲注注入：</strong>基于时间(Time)的盲注、基于布尔(Boolean)的盲注</p>
+<p>堆叠注入  </p>
+<p>延时注入</p>
+<p>联合查询 union 语法</p>
+<p><strong>user-agent 注入、referer 注入、cookie注入等。</strong></p>
+<p>注入类型有数字型注入  <strong>字符型注入点</strong>  <strong>搜索性注入点</strong></p>
+<p>2、按照数据的提交方式<br>Get注入<br>提交数据的方式是 GET , 注入点的位置在 GET 参数部分。比如有这样的一个链接<a target="_blank" rel="noopener" href="http://xxx.com/news.php?id=1">http://xxx.com/news.php?id=1</a> ，id 是注入点。<br>Post注入<br>使用 POST 方式提交数据，注入点位置在 POST 数据部分，常发生在表单中。<br>Cookie注入<br>HTTP 请求的时候会带上客户端的 Cookie， 注入点存在 Cookie 当中的某个字段中。<br>Http头部注入<br>注入点在 HTTP 请求头部的某个字段中。比如存在 User-Agent 字段中。严格讲的话，Cookie 其实应该也是算头部注入的一种形式。因为在 HTTP 请求的时候，Cookie 是头部的一个字段<br>原文链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45954730/article/details/131525362">https://blog.csdn.net/weixin_45954730/article/details/131525362</a></p>
+<h2 id="常用函数："><a href="#常用函数：" class="headerlink" title="常用函数："></a><strong>常用函数：</strong></h2><ul>
+<li>left(m,n) –从左向右截取字符串 m 返回其前 n 位</li>
+<li>substr(m,1,1) –取字符串 m 的左边第一位起，1 字长的字符串</li>
+<li>ascii(m) –返回字符 m 的 ASCII 码</li>
+<li>base64(m)—返回字符 m 的 base64 编码 • if(str1,str2,str3)–如果 str1 正确就执行 str2，否则执行 str3</li>
+<li>sleep(m)–使程序暂停 m 秒</li>
+<li>length(m) –返回字符串 m 的长度</li>
+<li>count(column_name) –返回指定列的值的数目</li>
+</ul>
+<h2 id="sql注入一般步骤："><a href="#sql注入一般步骤：" class="headerlink" title="sql注入一般步骤："></a><strong>sql注入一般步骤：</strong></h2><p>第一步：通过特殊的数据库查询语句</p>
+<p>第二步：在数据库的错误返回中找到sql漏洞</p>
+<p>第三步:利用sql语句猜解管理人员信息并登录管理员后台</p>
+<p><strong>判断注入类型</strong></p>
+<p><strong>数字型注入</strong></p>
+<p>\1. url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1%27%E6%97%B6%EF%BC%8C%E5%9B%A0%E4%B8%BA%E6%9C%89%E4%B8%80%E4%B8%AA%E5%A4%9A%E4%BD%99%E7%9A%84%22%E5%8D%95%E5%BC%95%E5%8F%B7%22%E4%BD%BF%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E9%94%99%E8%AF%AF">http://127.0.0.1/sqli-labs/Less-2/?id=1&#39;时，因为有一个多余的&quot;单引号&quot;使查询语句错误</a></p>
+<p>\2. url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a> and 1&#x3D;1时，没有报错</p>
+<p>\3. url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a> and 1&#x3D;2时，由于1&#x3D;2不成立，也会报错</p>
+<p>满足这三个，基本上就是数字注入了</p>
+<p><strong>字符型注入</strong></p>
+<p>\1. url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1%27%E6%97%B6%EF%BC%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%A4%E4%B8%BAid%E5%8F%AB%E5%81%9A1%27%E3%80%82%E6%9F%A5%E8%AF%A2%E4%B9%8B%E5%90%8E%E5%8F%91%E7%8E%B0%E6%B2%A1%E6%9C%89%E8%BF%99%E4%B8%AAid%E8%80%8C%E8%BF%94%E5%9B%9E%E9%94%99%E8%AF%AF%E3%80%82%EF%BC%88%E5%9C%A8%E5%AD%97%E7%AC%A6%E5%9E%8B%E6%B3%A8%E5%85%A5%E4%B8%AD%EF%BC%8C%E9%9C%80%E8%A6%81%E8%80%83%E8%99%91%E5%BC%95%E5%8F%B7%E7%9A%84%E9%97%AD%E5%90%88%EF%BC%89">http://127.0.0.1/sqli-labs/Less-2/?id=1&#39;时，数据库认为id叫做1&#39;。查询之后发现没有这个id而返回错误。（在字符型注入中，需要考虑引号的闭合）</a></p>
+<p>\2. url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ and ‘1’&#x3D;’1 在’1’&#x3D;’1之后没有加上’是因为传参时输入的内容已经被’ ‘包围。</p>
+<p><strong>后台查询列数</strong></p>
+<p>使用order by试出数据库列数</p>
+<p>url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ order by 数字 （如果试4时有错误，3时正确，那么列数为3）</p>
+<p><strong>找显示位</strong></p>
+<p>使用union select找出会返回客户端并显示的列。如果有3列时，应该这么写</p>
+<p>url为 <a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ union select 1,2,3</p>
+<p>加入显示位是3，这就意味着数据库开放了5个“窗口”用来显示内容，用查询到的数据，在这些窗口显示数据</p>
+<p><strong>查库名</strong></p>
+<p>联合查询：select database();</p>
+<p>下面是查看数据库的版本和数据库信息</p>
+<p>假如显示位是3，<a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ union select 1,version,database()</p>
+<p><strong>查表名</strong></p>
+<p>找到库名以后，使用<a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ union select 1,2,table_name from information_schema.tables where table_schema&#x3D;’库名’ (如果库名是字符型，此处库名要转成十六进制)</p>
+<p><strong>information_schema:</strong></p>
+<p>这是一个mysql自带的库，其中保存着关于mysql服务器所维护的所有其他数据库的信息。如数据库名，数据库的表，表列的数据类型与访问权限等，所以我们查询这个库</p>
+<p><strong>查列名</strong></p>
+<p>找到表之后，使用<a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ union select 1,2,column_name from information_schema.columns where table_name&#x3D;’表名’ (如果表名是字符型，此处库名要转成十六进制)</p>
+<p>如果表数或列数过多，可以在最后使用limit加上limit 0，5相当于检索1-5条信息</p>
+<p><strong>查具体数据</strong></p>
+<p>找到列之后，使用<a target="_blank" rel="noopener" href="http://127.0.0.1/sqli-labs/Less-2/?id=1">http://127.0.0.1/sqli-labs/Less-2/?id=1</a>‘ union select 1,2,group_concat(“要查询的数据”) from 表名</p>
+<h3 id="单引号注入"><a href="#单引号注入" class="headerlink" title="单引号注入"></a>单引号注入</h3><p>传入的参数被一对单引号包围了</p>
+<p>$query&#x3D;”select * from tables where id &#x3D; $_get[‘id’];</p>
+<p>这条语句是通过get方法获取我们写入的参数id，然后再根据参数id执行其它语句，当我们传入参数id&#x3D;1时，那么这条语句的实际执行为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">from</span> users <span class="hljs-keyword">where</span> id <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;1&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+
+
+<p>是当我们在id&#x3D;1后加入单引号后，明显语句变为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">from</span> users <span class="hljs-keyword">where</span> id <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;id&#x27;&#x27;;</span><br></code></pre></td></tr></table></figure>
+
+<p>我们在后面再加一个“–+”时，页面又恢复正常。在这里“–+”就是注释符号，将后面的单引号和其它信息注释掉了，在语句中和我们输入的单引号共同组成一对单引号，所以页面正常显示。</p>
+<img src="/2024/04/18/aa/cs.jpg" srcset="/img/loading.gif" lazyload class="" title="图片引用方法一">
+
+<p>aaaaaa</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SQL注入</div>
+      <div>http://example.com/2024/04/18/aa/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>王浩龙</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年4月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/04/18/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"TBbwgx221bhvVyxiMofTKjZM-gzGzoHsz","appKey":"tReAgvAT4nGWqH8slrtUWIjG","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
